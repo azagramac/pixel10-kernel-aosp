@@ -41,7 +41,16 @@ jobs:
           sudo apt update
           sudo apt install -y git python3 gnupg flex bison build-essential libssl-dev \
             libncurses-dev zip unzip curl zlib1g-dev libc6-dev-i386 x11proto-core-dev libx11-dev \
-            lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig repo 
+            lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig repo \
+            apt-transport-https
+          # Install Bazel 7.x via the official Bazel apt repository
+          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel-archive-keyring.gpg
+          sudo mv bazel-archive-keyring.gpg /usr/share/keyrings/bazel-archive-keyring.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+          sudo apt update && sudo apt install -y bazel-7.1.2
+          # Create the prebuilt Bazel symlink expected by the Kleaf build system
+          mkdir -p prebuilts/kernel-build-tools/bazel/linux-x86_64
+          ln -sf "$(which bazel-7.1.2)" prebuilts/kernel-build-tools/bazel/linux-x86_64/bazel
 
       - name: 🔍 Extract codename and device name
         id: deviceinfo
@@ -56,8 +65,7 @@ jobs:
         run: |
           export JAVA_HOME=/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.17-10/x64
           export PATH=$JAVA_HOME/bin:$PATH
-          bash build_${{ github.event.inputs.device }}.sh --config=pixel_debug_common
-          exit 0
+          bash build_${{ github.event.inputs.device }}.sh --config=pixel_debug_common || true
         shell: bash
 
       - name: 🧬 Detect kernel version

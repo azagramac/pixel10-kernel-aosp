@@ -15,4 +15,11 @@
 
 KLEAF_REPO_DIR=$($(dirname $(dirname $(readlink -f "$0")))/gettop.sh)
 
-exec "$KLEAF_REPO_DIR"/prebuilts/build-tools/path/linux-x86/python3 $(dirname $(readlink -f "$0"))/bazel.py "$KLEAF_REPO_DIR" "$@"
+PREBUILT_PYTHON3="$KLEAF_REPO_DIR/prebuilts/build-tools/path/linux-x86/python3"
+if [[ -x "$PREBUILT_PYTHON3" ]]; then
+    PYTHON3="$PREBUILT_PYTHON3"
+else
+    PYTHON3=$(which python3)
+fi
+
+exec "$PYTHON3" $(dirname $(readlink -f "$0"))/bazel.py "$KLEAF_REPO_DIR" "$@"
