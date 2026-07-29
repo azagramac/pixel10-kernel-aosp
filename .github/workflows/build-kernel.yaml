@@ -44,8 +44,7 @@ jobs:
             lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig repo \
             apt-transport-https
           # Install Bazel 7.x via the official Bazel apt repository
-          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > bazel-archive-keyring.gpg
-          sudo mv bazel-archive-keyring.gpg /usr/share/keyrings/bazel-archive-keyring.gpg
+          curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/bazel-archive-keyring.gpg > /dev/null
           echo "deb [arch=amd64 signed-by=/usr/share/keyrings/bazel-archive-keyring.gpg] https://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
           sudo apt update && sudo apt install -y bazel-7.1.2
           # Create the prebuilt Bazel symlink expected by the Kleaf build system
@@ -66,6 +65,7 @@ jobs:
           export JAVA_HOME=/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.17-10/x64
           export PATH=$JAVA_HOME/bin:$PATH
           bash build_${{ github.event.inputs.device }}.sh --config=pixel_debug_common || true
+          # Note: build failures are tolerated here; the release step handles missing output files gracefully
         shell: bash
 
       - name: 🧬 Detect kernel version
